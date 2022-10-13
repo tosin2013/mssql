@@ -1,8 +1,11 @@
 # installation files source 
 # server 2017
 #mssql_installation_source: https://go.microsoft.com/fwlink/?linkid=853016
+#msql_installation_binary: SQLServer2017-SSEI-Dev.exe
+
 # server 2019
 mssql_installation_source: https://go.microsoft.com/fwlink/p/?linkid=866662
+msql_installation_binary: SQL2019-SSEI-Dev.exe
 
 # Path to download installation media to
 mssql_installation_path: C:\SQLInstall
