@@ -68,7 +68,7 @@
 
 - name: Create mssql temp directory
   ansible.windows.win_file:
-    path: {{ mssql_temp_download_path }}
+    path: "{{ mssql_temp_download_path }}"
     state: directory
 
 - name: Fetch SQL Media Downloader
