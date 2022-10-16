@@ -66,6 +66,11 @@
 
 - meta: flush_handlers
 
+- name: Create mssql temp directory
+  ansible.windows.win_file:
+    path: {{ mssql_temp_download_path }}
+    state: directory
+
 - name: Fetch SQL Media Downloader
   win_get_url:
     url: "{{ mssql_installation_source }}"
@@ -81,7 +86,7 @@
     state: absent
 
 - name: Extract installation media
-  win_shell: "{{ mssql_installation_path }}\\SQLServer2017-DEV-x64-ENU.exe /X:{{ mssql_installation_path }}\\Media /Q"
+  win_shell: "{{ mssql_installation_path }}\\{{ msql_installation_binary_exe }} /X:{{ mssql_installation_path }}\\Media /Q"
 # If this step fails, logs are in C:\Program Files\Microsoft SQL Server\...\Setup Bootstrap\Log
 # it will often contain the actual error.  If it shows everything passing, the issue is within the DSC logs.
 # 
