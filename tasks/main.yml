@@ -7,10 +7,14 @@
 - name: Ensure the required NuGet package provider version is installed
   win_shell: "Install-PackageProvider Nuget –Force"
 
+# Load required PowershellGet modules
+- name: Ensure the required PowershellGet package provider version is installed
+  win_shell: "Install-Module PowershellGet -Force"
+  
 - name: Powershell | Check for SQLServer DSC Powershell module
   community.windows.win_psmodule:
     name: SQLServerDsc
-    state: latest
+    state: present
   tags: always
 
 - name: Powershell | Check for Storage DSC Powershell module
@@ -28,7 +32,7 @@
 - name: Powershell | Ensure that DBA Tools module is present
   community.windows.win_psmodule:
     name: dbatools
-    state: latest
+    state: present
   tags: always
 
 - name: Powershell | Check for xNetworking Powershell module
