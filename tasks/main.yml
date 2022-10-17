@@ -5,34 +5,40 @@
 
 # Load required powershell modules
 - name: Powershell | Check for SQLServer DSC Powershell module
-  win_psmodule:
+  community.windows.win_psmodule:
     name: SQLServerDsc
-    state: present
+    state: latest
+  tags: always
 
 - name: Powershell | Check for Storage DSC Powershell module
-  win_psmodule:
+  community.windows.win_psmodule:
     name: StorageDsc
     state: present
+  tags: always
 
 - name: Powershell | Check for ServerManager Powershell module
-  win_psmodule:
+  community.windows.win_psmodule:
     name: ServerManager
     state: present
+  tags: always
 
 - name: Powershell | Ensure that DBA Tools module is present
-  win_psmodule:
+  community.windows.win_psmodule:
     name: dbatools
-    state: present
+    state: latest
+  tags: always
 
 - name: Powershell | Check for xNetworking Powershell module
-  win_psmodule:
+  community.windows.win_psmodule:
     name: xNetworking
     state: present
+  tags: always
 
 - name: Windows | Install .NET Framework Core
   win_feature:
     name: NET-Framework-Core
     state: present
+  tags: always
 
 # Setup SQL Server Pre-Reqs
 - name: Windows | Install .NET Framework 3.5
@@ -75,6 +81,7 @@
   win_get_url:
     url: "{{ mssql_installation_source }}"
     dest: "{{ mssql_temp_download_path }}\\{{ msql_installation_binary }}"
+    force: false
 
 - name: Use Media Downloader to fetch SQL Installation CABs to {{ mssql_installation_path }}
   win_shell: "{{ mssql_temp_download_path }}\\{{ msql_installation_binary }} /Action=Download /MediaPath={{ mssql_installation_path }} /MediaType=CAB /Quiet"
@@ -102,7 +109,7 @@
 # https://docs.microsoft.com/en-us/powershell/dsc/troubleshooting#gathering-events-from-a-single-dsc-operation
 # then re-running a failing PowershellDSC job can help you find the source of your error
 - name: Install SQL Server
-  win_dsc:
+  ansible.windows.win_dsc:
     resource_name: SQLSetup
     Action: Install
     UpdateEnabled: True
@@ -120,6 +127,7 @@
     SQLCollation: "{{ mssql_collation }}"
     BrowserSvcStartupType: "{{ mssql_browsersvc_mode }}"
     SuppressReboot: "{{ mssql_suppress_reboot }}"
+    TcpEnabled: 1
     # Service Accounts
     #
     # If the type of the DSC resource option is a PSCredential then 
@@ -147,11 +155,11 @@
     ASSysAdminAccounts: "{{ mssql_asadmin_accounts }}"
   tags: install_sql
 
-# End of win_dsc for SQL Server
+# End of ansible.windows.win_dsc for SQL Server
 
 # Firewall configuration
 - name: Firewall | Allow Database Engine for instance
-  win_dsc:
+  ansible.windows.win_dsc:
     resource_name: xFirewall
     Name: "SQL Server Database Engine instance {{ mssql_instance_name }}"
     Program: sqlservr.exe 
@@ -164,7 +172,7 @@
   tags: configure_firewall
 
 - name: Firewall | Allow SQLBrowser for instance
-  win_dsc:
+  ansible.windows.win_dsc:
     resource_name: xFirewall
     Name: "SQL Server Browser instance {{ mssql_instance_name }}"
     Service: SQLBrowser
@@ -178,19 +186,18 @@
 
 # Begin SQL Server configuration
 - name: Enable TCP Connectivity
-  win_dsc:
-    resource_name: SqlServerNetwork
+  ansible.windows.win_dsc:
+    resource_name: SqlProtocolTcpIp
     InstanceName: "{{ mssql_instance_name }}"
-    ProtocolName: tcp
     TcpPort: "{{ mssql_port }}"
-    IsEnabled: True
-    RestartService: True
+    IpAddressGroup: 'IPAll'
+    SuppressRestart: False
   tags: configure_sql
 
 - name: Adjust Max Server Memory to {{ mssql_max_server_memory }}
   when: mssql_max_server_memory is defined
-  win_dsc:
-    resource_name: SqlServerConfiguration 
+  ansible.windows.win_dsc:
+    resource_name: SqlConfiguration 
     InstanceName: "{{ mssql_instance_name }}"
     ServerName: "{{ ansible_hostname }}"
     OptionName: max server memory (MB)
@@ -200,8 +207,8 @@
 
 - name: Adjust Min Server Memory to {{ mssql_min_server_memory }}
   when: mssql_min_server_memory is defined
-  win_dsc:
-    resource_name: SqlServerConfiguration 
+  ansible.windows.win_dsc:
+    resource_name: SqlConfiguration 
     ServerName: "{{ ansible_hostname }}"
     InstanceName: "{{ mssql_instance_name }}"
     OptionName: min server memory (MB)
@@ -210,8 +217,8 @@
 
 - name: Adjust Max Degree of Parallelism
   when: mssql_max_degree_of_parallelism is defined
-  win_dsc:
-    resource_name: SqlServerConfiguration 
+  ansible.windows.win_dsc:
+    resource_name: SqlConfiguration 
     ServerName: "{{ ansible_hostname }}"
     InstanceName: "{{ mssql_instance_name }}"
     OptionName: max degree of parallelism
