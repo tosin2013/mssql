@@ -5,7 +5,7 @@
 
 # Load required powershell modules
 - name: Ensure the required NuGet package provider version is installed
-  win_shell: "Find-PackageProvider -Name Nuget -ForceBootstrap -IncludeDependencies -Force"
+  win_shell: "Install-PackageProvider Nuget –Force"
 
 - name: Powershell | Check for SQLServer DSC Powershell module
   community.windows.win_psmodule:
